@@ -21,6 +21,8 @@ namespace FNAF1_Recreation
         public static Texture2D staticLineTex;
         public static int barPos = -20;
 
+        public static Texture2D starTex;
+
         public static int staticTimer = 0;
         public static bool staticOn = false;
 

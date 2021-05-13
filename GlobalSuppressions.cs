@@ -6,3 +6,4 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Style", "IDE0028:Simplify collection initialization", Justification = ">>_<<", Scope = "member", Target = "~M:FNAF1_Recreation.Game1.Initialize")]
+[assembly: SuppressMessage("Style", "IDE0017:Simplify object initialization", Justification = ">>_<<", Scope = "member", Target = "~M:FNAF1_Recreation.Game1.Initialize")]

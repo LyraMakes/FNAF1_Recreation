@@ -10,22 +10,35 @@ namespace FNAF1_Recreation
     class UI
     {
         public Texture2D loadTex;
+        public Texture2D[] _usageTexMap;
 
         public int power;
+        public int powerUsage;
+
         public int time;
-        int timeSeconds;
+        public int timeSeconds;
 
         double startTime;
 
         public UI()
         {
-            power = 100;
+            power = 99;
+            powerUsage = 1;
             time = 12;
+            timeSeconds = 0;
         }
 
         public void SetStartTime(GameTime gameTime)
         {
             startTime = gameTime.TotalGameTime.TotalSeconds;
+        }
+
+        public void Reset()
+        {
+            power = 99;
+            powerUsage = 1;
+            time = 12;
+            timeSeconds = 0;
         }
 
         public void OnTick(GameTime gameTime)

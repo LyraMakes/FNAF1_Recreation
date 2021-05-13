@@ -24,6 +24,7 @@ namespace FNAF1_Recreation
         Animatronic[] animatronics;
         SpriteFont textFont;
         SpriteFont titleFont;
+        SpriteFont labelFont;
 
         SoundEffect titleSong;
         SoundEffect menuSelectionSFX;
@@ -57,6 +58,8 @@ namespace FNAF1_Recreation
 
             ui = new UI();
 
+            ui._usageTexMap = new Texture2D[5];
+
             Input.Initialize();
             Input.Latch();
 
@@ -75,8 +78,24 @@ namespace FNAF1_Recreation
             TitleScreen._staticTexMap = new Texture2D[8];
             TitleScreen._staticBTexMap = new Texture2D[7];
             TitleScreen.menuOptions = new List<string>();
+
+            Office._officeTexMap = new Texture2D[5];
+            Office.srcPosMap = new Rectangle[Office.numSlices + 1];
+            Office.yPosMap = new double[(Office.numSlices / 2) + 1];
+            
+            for (int i = 0; i < Office.yPosMap.Length; i++)
+            {
+                Office.yPosMap[i] = 0.008 * 0.06 * i * i;
+            }
+
             
             InitTitleMenu();
+
+            Jumpscare._bonnieTexMap  = new Texture2D[11];
+            Jumpscare._chicaTexMap   = new Texture2D[16];
+            Jumpscare._foxyTexMap    = new Texture2D[18];
+            Jumpscare._freddyATexMap = new Texture2D[31];
+            Jumpscare._freddyBTexMap = new Texture2D[21];
 
 
             //Initialize Rooms
@@ -141,9 +160,10 @@ namespace FNAF1_Recreation
             _spriteLayer[4] = new SpriteBatch(GraphicsDevice);
             
             // Fonts
-            textFont = Content.Load<SpriteFont>("FNAFTitleFont");
+            textFont  = Content.Load<SpriteFont>("FNAFTitleFont");
             titleFont = Content.Load<SpriteFont>("FNAFBigTitleFont");
-            
+            labelFont = Content.Load<SpriteFont>("FNAFFontA");
+                        
             // Title Textures
             TitleScreen._texMap[0] = Content.Load<Texture2D>("Images\\MM-1");
             TitleScreen._texMap[1] = Content.Load<Texture2D>("Images\\MM-2");
@@ -170,7 +190,8 @@ namespace FNAF1_Recreation
             TitleScreen._staticBTexMap[6] = Content.Load<Texture2D>("Images\\staticOverlayB7");
             TitleScreen.staticBTex = TitleScreen._staticBTexMap[0];
 
-            TitleScreen.staticLineTex     = Content.Load<Texture2D>("Images\\staticBar");
+            TitleScreen.staticLineTex = Content.Load<Texture2D>("Images\\staticBar");
+            TitleScreen.starTex       = Content.Load<Texture2D>("Icons\\star");
 
 
             // Camera Textures
@@ -198,13 +219,139 @@ namespace FNAF1_Recreation
             Camera._offTex[9]  = Content.Load<Texture2D>("Images\\CAM-6-OFF" );
             Camera._offTex[10] = Content.Load<Texture2D>("Images\\CAM-7-OFF" );
 
+            // Jumpscares
+            Jumpscare._bonnieTexMap[0]  = Content.Load<Texture2D>("Jumpscares\\bonnie1" );
+            Jumpscare._bonnieTexMap[1]  = Content.Load<Texture2D>("Jumpscares\\bonnie2" );
+            Jumpscare._bonnieTexMap[2]  = Content.Load<Texture2D>("Jumpscares\\bonnie3" );
+            Jumpscare._bonnieTexMap[3]  = Content.Load<Texture2D>("Jumpscares\\bonnie4" );
+            Jumpscare._bonnieTexMap[4]  = Content.Load<Texture2D>("Jumpscares\\bonnie5" );
+            Jumpscare._bonnieTexMap[5]  = Content.Load<Texture2D>("Jumpscares\\bonnie6" );
+            Jumpscare._bonnieTexMap[6]  = Content.Load<Texture2D>("Jumpscares\\bonnie7" );
+            Jumpscare._bonnieTexMap[7]  = Content.Load<Texture2D>("Jumpscares\\bonnie8" );
+            Jumpscare._bonnieTexMap[8]  = Content.Load<Texture2D>("Jumpscares\\bonnie9" );
+            Jumpscare._bonnieTexMap[9]  = Content.Load<Texture2D>("Jumpscares\\bonnie10");
+            Jumpscare._bonnieTexMap[10] = Content.Load<Texture2D>("Jumpscares\\bonnie11");
+            
+            Jumpscare._chicaTexMap[0]  = Content.Load<Texture2D>("Jumpscares\\chica1" );
+            Jumpscare._chicaTexMap[1]  = Content.Load<Texture2D>("Jumpscares\\chica2");
+            Jumpscare._chicaTexMap[2]  = Content.Load<Texture2D>("Jumpscares\\chica3");
+            Jumpscare._chicaTexMap[3]  = Content.Load<Texture2D>("Jumpscares\\chica4");
+            Jumpscare._chicaTexMap[4]  = Content.Load<Texture2D>("Jumpscares\\chica5");
+            Jumpscare._chicaTexMap[5]  = Content.Load<Texture2D>("Jumpscares\\chica6");
+            Jumpscare._chicaTexMap[6]  = Content.Load<Texture2D>("Jumpscares\\chica7");
+            Jumpscare._chicaTexMap[7]  = Content.Load<Texture2D>("Jumpscares\\chica8");
+            Jumpscare._chicaTexMap[8]  = Content.Load<Texture2D>("Jumpscares\\chica9");
+            Jumpscare._chicaTexMap[9]  = Content.Load<Texture2D>("Jumpscares\\chica10");
+            Jumpscare._chicaTexMap[10] = Content.Load<Texture2D>("Jumpscares\\chica11");
+            Jumpscare._chicaTexMap[11] = Content.Load<Texture2D>("Jumpscares\\chica12");
+            Jumpscare._chicaTexMap[12] = Content.Load<Texture2D>("Jumpscares\\chica13");
+            Jumpscare._chicaTexMap[13] = Content.Load<Texture2D>("Jumpscares\\chica14");
+            Jumpscare._chicaTexMap[14] = Content.Load<Texture2D>("Jumpscares\\chica15");
+            Jumpscare._chicaTexMap[15] = Content.Load<Texture2D>("Jumpscares\\chica16");
+            
+            Jumpscare._foxyTexMap[0]  = Content.Load<Texture2D>("Jumpscares\\foxy1" );
+            Jumpscare._foxyTexMap[1]  = Content.Load<Texture2D>("Jumpscares\\foxy2");
+            Jumpscare._foxyTexMap[2]  = Content.Load<Texture2D>("Jumpscares\\foxy3");
+            Jumpscare._foxyTexMap[3]  = Content.Load<Texture2D>("Jumpscares\\foxy4");
+            Jumpscare._foxyTexMap[4]  = Content.Load<Texture2D>("Jumpscares\\foxy5");
+            Jumpscare._foxyTexMap[5]  = Content.Load<Texture2D>("Jumpscares\\foxy6");
+            Jumpscare._foxyTexMap[6]  = Content.Load<Texture2D>("Jumpscares\\foxy7");
+            Jumpscare._foxyTexMap[7]  = Content.Load<Texture2D>("Jumpscares\\foxy8");
+            Jumpscare._foxyTexMap[8]  = Content.Load<Texture2D>("Jumpscares\\foxy9");
+            Jumpscare._foxyTexMap[9]  = Content.Load<Texture2D>("Jumpscares\\foxy10");
+            Jumpscare._foxyTexMap[10] = Content.Load<Texture2D>("Jumpscares\\foxy11");
+            Jumpscare._foxyTexMap[11] = Content.Load<Texture2D>("Jumpscares\\foxy12");
+            Jumpscare._foxyTexMap[12] = Content.Load<Texture2D>("Jumpscares\\foxy13");
+            Jumpscare._foxyTexMap[13] = Content.Load<Texture2D>("Jumpscares\\foxy14");
+            Jumpscare._foxyTexMap[14] = Content.Load<Texture2D>("Jumpscares\\foxy15");
+            Jumpscare._foxyTexMap[15] = Content.Load<Texture2D>("Jumpscares\\foxy16");
+            Jumpscare._foxyTexMap[16] = Content.Load<Texture2D>("Jumpscares\\foxy17");
+            Jumpscare._foxyTexMap[17] = Content.Load<Texture2D>("Jumpscares\\foxy18");
+
+
+            Jumpscare._freddyATexMap[0]  = Content.Load<Texture2D>("Jumpscares\\freddyA1");
+            Jumpscare._freddyATexMap[1]  = Content.Load<Texture2D>("Jumpscares\\freddyA2");
+            Jumpscare._freddyATexMap[2]  = Content.Load<Texture2D>("Jumpscares\\freddyA3");
+            Jumpscare._freddyATexMap[3]  = Content.Load<Texture2D>("Jumpscares\\freddyA4");
+            Jumpscare._freddyATexMap[4]  = Content.Load<Texture2D>("Jumpscares\\freddyA5");
+            Jumpscare._freddyATexMap[5]  = Content.Load<Texture2D>("Jumpscares\\freddyA6");
+            Jumpscare._freddyATexMap[6]  = Content.Load<Texture2D>("Jumpscares\\freddyA7");
+            Jumpscare._freddyATexMap[7]  = Content.Load<Texture2D>("Jumpscares\\freddyA8");
+            Jumpscare._freddyATexMap[8]  = Content.Load<Texture2D>("Jumpscares\\freddyA9");
+            Jumpscare._freddyATexMap[9]  = Content.Load<Texture2D>("Jumpscares\\freddyA10");
+            Jumpscare._freddyATexMap[10] = Content.Load<Texture2D>("Jumpscares\\freddyA11");
+            Jumpscare._freddyATexMap[11] = Content.Load<Texture2D>("Jumpscares\\freddyA12");
+            Jumpscare._freddyATexMap[12] = Content.Load<Texture2D>("Jumpscares\\freddyA13");
+            Jumpscare._freddyATexMap[13] = Content.Load<Texture2D>("Jumpscares\\freddyA14");
+            Jumpscare._freddyATexMap[14] = Content.Load<Texture2D>("Jumpscares\\freddyA15");
+            Jumpscare._freddyATexMap[15] = Content.Load<Texture2D>("Jumpscares\\freddyA16");
+            Jumpscare._freddyATexMap[16] = Content.Load<Texture2D>("Jumpscares\\freddyA17");
+            Jumpscare._freddyATexMap[17] = Content.Load<Texture2D>("Jumpscares\\freddyA18");
+            Jumpscare._freddyATexMap[18] = Content.Load<Texture2D>("Jumpscares\\freddyA19");
+            Jumpscare._freddyATexMap[19] = Content.Load<Texture2D>("Jumpscares\\freddyA20");
+            Jumpscare._freddyATexMap[20] = Content.Load<Texture2D>("Jumpscares\\freddyA21");
+            Jumpscare._freddyATexMap[21] = Content.Load<Texture2D>("Jumpscares\\freddyA22");
+            Jumpscare._freddyATexMap[22] = Content.Load<Texture2D>("Jumpscares\\freddyA23");
+            Jumpscare._freddyATexMap[23] = Content.Load<Texture2D>("Jumpscares\\freddyA24");
+            Jumpscare._freddyATexMap[24] = Content.Load<Texture2D>("Jumpscares\\freddyA25");
+            Jumpscare._freddyATexMap[25] = Content.Load<Texture2D>("Jumpscares\\freddyA26");
+            Jumpscare._freddyATexMap[26] = Content.Load<Texture2D>("Jumpscares\\freddyA27");
+            Jumpscare._freddyATexMap[27] = Content.Load<Texture2D>("Jumpscares\\freddyA28");
+            Jumpscare._freddyATexMap[28] = Content.Load<Texture2D>("Jumpscares\\freddyA29");
+            Jumpscare._freddyATexMap[29] = Content.Load<Texture2D>("Jumpscares\\freddyA30");
+            Jumpscare._freddyATexMap[30] = Content.Load<Texture2D>("Jumpscares\\freddyA31");
+
+            Jumpscare._freddyBTexMap[0]  = Content.Load<Texture2D>("Jumpscares\\freddyB1");
+            Jumpscare._freddyBTexMap[1]  = Content.Load<Texture2D>("Jumpscares\\freddyB2");
+            Jumpscare._freddyBTexMap[2]  = Content.Load<Texture2D>("Jumpscares\\freddyB3");
+            Jumpscare._freddyBTexMap[3]  = Content.Load<Texture2D>("Jumpscares\\freddyB4");
+            Jumpscare._freddyBTexMap[4]  = Content.Load<Texture2D>("Jumpscares\\freddyB5");
+            Jumpscare._freddyBTexMap[5]  = Content.Load<Texture2D>("Jumpscares\\freddyB6");
+            Jumpscare._freddyBTexMap[6]  = Content.Load<Texture2D>("Jumpscares\\freddyB7");
+            Jumpscare._freddyBTexMap[7]  = Content.Load<Texture2D>("Jumpscares\\freddyB8");
+            Jumpscare._freddyBTexMap[8]  = Content.Load<Texture2D>("Jumpscares\\freddyB9");
+            Jumpscare._freddyBTexMap[9]  = Content.Load<Texture2D>("Jumpscares\\freddyB10");
+            Jumpscare._freddyBTexMap[10] = Content.Load<Texture2D>("Jumpscares\\freddyB11");
+            Jumpscare._freddyBTexMap[11] = Content.Load<Texture2D>("Jumpscares\\freddyB12");
+            Jumpscare._freddyBTexMap[12] = Content.Load<Texture2D>("Jumpscares\\freddyB13");
+            Jumpscare._freddyBTexMap[13] = Content.Load<Texture2D>("Jumpscares\\freddyB14");
+            Jumpscare._freddyBTexMap[14] = Content.Load<Texture2D>("Jumpscares\\freddyB15");
+            Jumpscare._freddyBTexMap[15] = Content.Load<Texture2D>("Jumpscares\\freddyB16");
+            Jumpscare._freddyBTexMap[16] = Content.Load<Texture2D>("Jumpscares\\freddyB17");
+            Jumpscare._freddyBTexMap[17] = Content.Load<Texture2D>("Jumpscares\\freddyB18");
+            Jumpscare._freddyBTexMap[18] = Content.Load<Texture2D>("Jumpscares\\freddyB19");
+            Jumpscare._freddyBTexMap[19] = Content.Load<Texture2D>("Jumpscares\\freddyB20");
+            Jumpscare._freddyBTexMap[20] = Content.Load<Texture2D>("Jumpscares\\freddyB21");
+
+            Office._officeTexMap[0] = Content.Load<Texture2D>("Rooms\\officeN");
+            Office._officeTexMap[1] = Content.Load<Texture2D>("Rooms\\officeL");
+            Office._officeTexMap[2] = Content.Load<Texture2D>("Rooms\\officeR");
+            Office._officeTexMap[3] = Content.Load<Texture2D>("Rooms\\officeB");
+            Office._officeTexMap[4] = Content.Load<Texture2D>("Rooms\\officeC");
+
             // UI Textures
-            ui.loadTex         = Content.Load<Texture2D>("Icons\\loading");
+            ui._usageTexMap[0] = Content.Load<Texture2D>("Icons\\usage1");
+            ui._usageTexMap[1] = Content.Load<Texture2D>("Icons\\usage2");
+            ui._usageTexMap[2] = Content.Load<Texture2D>("Icons\\usage3");
+            ui._usageTexMap[3] = Content.Load<Texture2D>("Icons\\usage4");
+            ui._usageTexMap[4] = Content.Load<Texture2D>("Icons\\usage5");
+            
+            ui.loadTex = Content.Load<Texture2D>("Icons\\loading");
+
 
             // Audio
             titleSong        = Content.Load<SoundEffect>("Audio\\titleScreen");
             menuSelectionSFX = Content.Load<SoundEffect>("Audio\\blip1");
             titleStatic      = Content.Load<SoundEffect>("Audio\\static2");
+
+            // Post Content Init
+            Office.officeTex = Office._officeTexMap[0];
+
+            int width = _graphics.PreferredBackBufferWidth / Office.numSlices + 1;
+            for (int i = 0; i < Office.numSlices + 1; i++)
+            {
+                Office.srcPosMap[i] = new Rectangle(i * width, 0, width, Office._officeTexMap[0].Height);
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -225,6 +372,7 @@ namespace FNAF1_Recreation
                     UpdateNightIntro(gameTime);
                     break;
                 case GameState.NIGHT:
+                    UpdateNight(gameTime);
                     break;
                 case GameState.CLOCK:
                     break;
@@ -276,6 +424,8 @@ namespace FNAF1_Recreation
 
         private void UpdateIntro(GameTime gameTime)
         {
+            StartNight(1, gameTime);
+
             // Controls the fade of the opening disclaimer
             if (1 <= gameTime.TotalGameTime.TotalSeconds && gameTime.TotalGameTime.TotalSeconds <= 2 && introAlpha < 100) introAlpha += 10;
             if (2 <= gameTime.TotalGameTime.TotalSeconds && gameTime.TotalGameTime.TotalSeconds <= 3 && introAlpha < 100) introAlpha = 100;
@@ -374,7 +524,7 @@ namespace FNAF1_Recreation
 
             loadAlpha = 0;
             if (gameTime.TotalGameTime.TotalSeconds <= startTime + 2) introAlpha = 100;
-            if (gameTime.TotalGameTime.TotalSeconds >= startTime + 2 && gameTime.TotalGameTime.TotalSeconds < startTime + 3) introAlpha -= 10;
+            if (gameTime.TotalGameTime.TotalSeconds >= startTime + 2 && gameTime.TotalGameTime.TotalSeconds < startTime + 3) introAlpha -= 2;
             if (gameTime.TotalGameTime.TotalSeconds >= startTime + 3 && gameTime.TotalGameTime.TotalSeconds < startTime + 8)
             {
                 introAlpha = 0;
@@ -383,10 +533,28 @@ namespace FNAF1_Recreation
 
             if (gameTime.TotalGameTime.TotalSeconds >= startTime + 8)
             {
+                UpdateNight(gameTime);
                 gameState = GameState.NIGHT;
             }
         }
 
+        private void UpdateNight(GameTime gameTime)
+        {
+            ui.OnTick(gameTime);
+
+            if (Input.IsKeyDown(Keys.Right)) Office.xScroll += 10;
+            if (Input.IsKeyDown(Keys.Left )) Office.xScroll -= 10;
+
+            int scrollMax = -1 * (_graphics.PreferredBackBufferWidth - Office.GetOfficeTex().Width);
+            if (Office.xScroll < 0) Office.xScroll = 0;
+            if (Office.xScroll > scrollMax) Office.xScroll = scrollMax;
+
+            int width = _graphics.PreferredBackBufferWidth / Office.numSlices + 1;
+            for (int i = 0; i < Office.numSlices + 1; i++)
+            {
+                Office.srcPosMap[i].X = Office.xScroll + (i * width);
+            }
+        }
 
         private void DrawIntro()
         {
@@ -395,7 +563,7 @@ namespace FNAF1_Recreation
             _spriteLayer[3].End();
         }
 
-        // TODO - Add Drawing Completion Stars
+        // TODO - New Game Fade to newspaper
         private void DrawTitle()
         {
             _spriteLayer[0].Begin();
@@ -429,9 +597,14 @@ namespace FNAF1_Recreation
             
             _spriteLayer[4].DrawString(titleFont, ">>", new Vector2(125, selYPos), Color.White);
 
+            for (int i = 0; i < TitleScreen.numStars; i++)
+            {
+                _spriteLayer[4].Draw(TitleScreen.starTex, new Vector2(200 + (i * 80), 300), Color.White);
+            }
+
             for (int i = 0; i < TitleScreen.menuOptions.Count; i++)
             {
-                _spriteLayer[4].DrawString(titleFont, TitleScreen.menuOptions[i], new Vector2(200, 400 + i * 80), Color.White);
+                _spriteLayer[4].DrawString(titleFont, TitleScreen.menuOptions[i], new Vector2(200, 400 + (i * 80)), Color.White);
             }
 
             if (TitleScreen.selected == 1)
@@ -444,8 +617,8 @@ namespace FNAF1_Recreation
         {
             if (TitleScreen.staticOn)
             {
-                _spriteLayer[2].Begin(/* SpriteSortMode.Immediate, BlendState.AlphaBlend */);
-                _spriteLayer[2].Draw(TitleScreen.staticBTex, Vector2.Zero, Color.White/* * 0.7f */);
+                _spriteLayer[2].Begin();
+                _spriteLayer[2].Draw(TitleScreen.staticBTex, Vector2.Zero, Color.White);
                 _spriteLayer[2].End();
             }
 
@@ -458,11 +631,52 @@ namespace FNAF1_Recreation
         // TODO - HNNNNNNG EVERYTHING
         private void DrawNight()
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            _spriteLayer[0].Begin();
+            DrawTexPerspective(Office.GetOfficeTex(), 0);
+            _spriteLayer[0].End();
+
+
+
+            // Draw the Night UI
+            string time = $"{ui.time}";
+            int timeOffset = _graphics.PreferredBackBufferWidth - 120 - (15 * time.Length);
+            int bottomYPos = _graphics.PreferredBackBufferHeight - labelFont.LineSpacing - 10;
+
+            _spriteLayer[3].Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            _spriteLayer[3].DrawString(titleFont, "AM", new Vector2(1180, 30), Color.White);
+            _spriteLayer[3].DrawString(titleFont, time, new Vector2(timeOffset, 30), Color.White);
+            _spriteLayer[3].DrawString(labelFont, $"Night {TitleScreen.currentNight}", new Vector2(1160, 80), Color.White);
+
+            _spriteLayer[3].DrawString(labelFont, $"Power left: {ui.power}%", new Vector2(20, bottomYPos - 40), Color.White);
+
+            _spriteLayer[3].DrawString(labelFont, "Usage:", new Vector2(20, bottomYPos), Color.White);
+            _spriteLayer[3].Draw(ui._usageTexMap[ui.powerUsage - 1], new Vector2(115, bottomYPos), Color.White);
+            _spriteLayer[3].End();
 
         }
 
-        private static void InitTitleMenu()
+        // Oh my god this is such garbage but it works
+        private void DrawTexPerspective(Texture2D tex, int layer)
+        {
+            for (int i = 0; i <= Office.numSlices; i++)
+            {
+                int yPos = Math.Abs((Office.numSlices / 2) - i);
+                Vector2 pos = new Vector2(Office.srcPosMap[i].X - Office.xScroll, tex.Height / 2);
+                _spriteLayer[layer].Draw(
+                    tex, // Base Texture
+                    pos,                   // Position
+                    Office.srcPosMap[i],   // Source on Tex
+                    Color.White,           // Color Mask, Unused in base Begin() mode
+                    0,                     // Rotation
+                    new Vector2(0, tex.Height / 2),         // Origin
+                    new Vector2(1, (float)(1 + Office.yPosMap[yPos])), // Scale
+                    SpriteEffects.None,    // Sprite Effects
+                    0                      // Layer Depth - Unused with my layering system
+                );
+            }
+        }
+
+        private void InitTitleMenu()
         {
             TitleScreen.menuOptions.Clear();
             TitleScreen.menuOptions.Add("New Game");
@@ -538,6 +752,7 @@ namespace FNAF1_Recreation
             TitleScreen.staticTimer = 5;
             startTime = gameTime.TotalGameTime.TotalSeconds;
             ui.SetStartTime(gameTime);
+            ui.Reset();
         }
     }
 }
