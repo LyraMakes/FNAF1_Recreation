@@ -11,16 +11,19 @@ namespace FNAF1_Recreation
     {
         public static List<AudioChannel> channels;
 
-        public static void Play(SoundEffect sfx)
+        public static AudioChannel Play(SoundEffect sfx)
         {
             channels.Add(new AudioChannel(sfx));
             channels.Last().Play();
+
+            return channels.Last();
         }
 
-        public static void Play(SoundEffect sfx, bool isLooping)
+        public static AudioChannel Play(SoundEffect sfx, bool isLooping)
         {
             channels.Add(new AudioChannel(sfx));
             channels.Last().Play(isLooping);
+            return channels.Last();
         }
 
         public static void Add(AudioChannel ch) => channels.Add(ch);

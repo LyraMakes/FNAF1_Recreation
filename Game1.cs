@@ -12,7 +12,7 @@ using FNAF1_Recreation.Animatronics;
 
 namespace FNAF1_Recreation
 {
-    public enum GameState { INTRO, MENU, NIGHT, NIGHT_INTRO ,CLOCK, FINISH, EVENT }
+    public enum GameState { INTRO, MENU, NIGHT, NIGHT_INTRO, CLOCK, FINISH, EVENT }
 
     public class Game1 : Game
     {
@@ -30,6 +30,8 @@ namespace FNAF1_Recreation
         SoundEffect menuSelectionSFX;
         SoundEffect titleStatic;
 
+        SoundEffect DoorSFX;
+
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch[] _spriteLayer;
 
@@ -37,6 +39,8 @@ namespace FNAF1_Recreation
         private int loadAlpha;
         private int trueNight;
         private double startTime;
+
+        public int SliceWidth { get { return _graphics.PreferredBackBufferWidth / Office.numSlices + 1; } }
 
         public Game1()
         {
@@ -52,6 +56,18 @@ namespace FNAF1_Recreation
 
         protected override void Initialize()
         {
+            //DEBUG ONLY
+            int dbgWid = 55;
+            int dbgHgt = 90;
+            Debug.tex = new Texture2D(_graphics.GraphicsDevice, dbgWid, dbgHgt);
+            Color[] dbgClr = new Color[dbgWid * dbgHgt];
+            for (int i = 0; i < dbgClr.Length; i++)
+            {
+                dbgClr[i] = new Color(255, 0, 255, 255);
+            }
+            Debug.tex.SetData(dbgClr);
+
+
             //Initializes the Program-Wide RNG
             int seed = (int)DateTime.UtcNow.ToFileTimeUtc();
             rand = new Rand(seed);
@@ -65,7 +81,6 @@ namespace FNAF1_Recreation
 
             gameState = GameState.INTRO;
             introAlpha = 0;
-            
 
             // Create Static Arrays and Lists
             Audio.channels = new List<AudioChannel>();
@@ -87,6 +102,12 @@ namespace FNAF1_Recreation
             {
                 Office.yPosMap[i] = 0.008 * 0.06 * i * i;
             }
+
+            Office._leftControlTexMap =  new Texture2D[4];
+            Office._rightControlTexMap = new Texture2D[4];
+
+            Office.LeftControl = new Prop();
+            Office.RightControl = new Prop();
 
             
             InitTitleMenu();
@@ -338,20 +359,33 @@ namespace FNAF1_Recreation
             
             ui.loadTex = Content.Load<Texture2D>("Icons\\loading");
 
+            Office._leftControlTexMap[0]  = Content.Load<Texture2D>("Props\\LFF");
+            Office._leftControlTexMap[1]  = Content.Load<Texture2D>("Props\\LFN");
+            Office._leftControlTexMap[2]  = Content.Load<Texture2D>("Props\\LNF");
+            Office._leftControlTexMap[3]  = Content.Load<Texture2D>("Props\\LNN");
+            
+            Office._rightControlTexMap[0] = Content.Load<Texture2D>("Props\\RFF");
+            Office._rightControlTexMap[1] = Content.Load<Texture2D>("Props\\RFN");
+            Office._rightControlTexMap[2] = Content.Load<Texture2D>("Props\\RNF");
+            Office._rightControlTexMap[3] = Content.Load<Texture2D>("Props\\RNN");
+            
+
 
             // Audio
             titleSong        = Content.Load<SoundEffect>("Audio\\titleScreen");
             menuSelectionSFX = Content.Load<SoundEffect>("Audio\\blip1");
             titleStatic      = Content.Load<SoundEffect>("Audio\\static2");
 
-            // Post Content Init
-            Office.officeTex = Office._officeTexMap[0];
+            DoorSFX = Content.Load<SoundEffect>("Audio\\doorToggle");
 
-            int width = _graphics.PreferredBackBufferWidth / Office.numSlices + 1;
+            // Post Content Initialization
             for (int i = 0; i < Office.numSlices + 1; i++)
             {
-                Office.srcPosMap[i] = new Rectangle(i * width, 0, width, Office._officeTexMap[0].Height);
+                Office.srcPosMap[i] = new Rectangle(i * SliceWidth, 0, SliceWidth, Office._officeTexMap[0].Height);
             }
+            Office.LeftControl.SetTex(Office.LeftControlTex, SliceWidth);
+            Office.RightControl.SetTex(Office.RightControlTex, SliceWidth);
+
         }
 
         protected override void Update(GameTime gameTime)
@@ -422,8 +456,10 @@ namespace FNAF1_Recreation
             base.Draw(gameTime);
         }
 
+        // HEY DONT FORGET ABOUT THE TESTING LINE
         private void UpdateIntro(GameTime gameTime)
         {
+            //USED FOR TESTING --- MAKE FUCKING SURE THIS IS REMOVED BEFORE COMPLETION
             StartNight(1, gameTime);
 
             // Controls the fade of the opening disclaimer
@@ -538,25 +574,63 @@ namespace FNAF1_Recreation
             }
         }
 
+        // TODO - The actual game logic... not just the ui updates and visuals
         private void UpdateNight(GameTime gameTime)
         {
             ui.OnTick(gameTime);
 
-            if (Input.IsKeyDown(Keys.Right)) Office.xScroll += 10;
-            if (Input.IsKeyDown(Keys.Left )) Office.xScroll -= 10;
+            // Scrolling logic -------
+            int gPBBW = _graphics.PreferredBackBufferWidth;
+            int gPBBH = _graphics.PreferredBackBufferHeight;
 
-            int scrollMax = -1 * (_graphics.PreferredBackBufferWidth - Office.GetOfficeTex().Width);
+            if (Collide(Input.GetMousePos(), 0, 0, 500, gPBBH)) Office.xScroll -= 10;
+            if (Collide(Input.GetMousePos(), gPBBW - 500, 0, 500, gPBBH)) Office.xScroll += 10;
+
+            int scrollMax = -1 * (gPBBW - Office.OfficeTex.Width);
             if (Office.xScroll < 0) Office.xScroll = 0;
             if (Office.xScroll > scrollMax) Office.xScroll = scrollMax;
 
-            int width = _graphics.PreferredBackBufferWidth / Office.numSlices + 1;
+            int width = gPBBW / Office.numSlices + 1;
             for (int i = 0; i < Office.numSlices + 1; i++)
             {
                 Office.srcPosMap[i].X = Office.xScroll + (i * width);
             }
+
+            // Door Controls logic:
+            if (Office.leftDoorTimer > 0) Office.leftDoorTimer--;
+            if (Office.rightDoorTimer > 0) Office.rightDoorTimer--;
+
+            if (Office.leftDoorTimer == 0 && Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.leftXPos - Office.xScroll + 20, Office.controlHeight + 15, 55, 90))
+            {
+                Office.leftDoorTimer = 30;
+                Audio.Play(DoorSFX);
+                Office.isLeftDoorClosed = !Office.isLeftDoorClosed;
+            }
+            if (Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.leftXPos - Office.xScroll + 20, Office.controlHeight + 135, 55, 90))
+            {
+                Office.isLeftLightOn = !Office.isLeftLightOn;
+                Office.isRightLightOn = false;
+            }
+
+            if (Office.rightDoorTimer == 0 && Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 15, 55, 90))
+            {
+                Office.rightDoorTimer = 30;
+                Audio.Play(DoorSFX);
+                Office.isRightDoorClosed = !Office.isRightDoorClosed;
+            }
+            if (Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 135, 55, 90))
+            {
+                Office.isRightLightOn = !Office.isRightLightOn;
+                Office.isLeftLightOn = false;
+            }
+
+            Office.LeftControl.SetTex(Office.LeftControlTex, SliceWidth);
+            Office.RightControl.SetTex(Office.RightControlTex, SliceWidth);
+
+
         }
 
-        private void DrawIntro()
+            private void DrawIntro()
         {
             _spriteLayer[3].Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             _spriteLayer[3].DrawString(titleFont, Program.Disclaimer, new Vector2(150, 200), Color.White * (introAlpha / 100f));
@@ -628,13 +702,25 @@ namespace FNAF1_Recreation
             _spriteLayer[3].End();
         }
 
-        // TODO - HNNNNNNG EVERYTHING
+        // TODO - Drawing of cameras & camera UI, Jumpscares
         private void DrawNight()
         {
+            // Drawing the BG Layer
             _spriteLayer[0].Begin();
-            DrawTexPerspective(Office.GetOfficeTex(), 0);
+            DrawTexPerspective(Office.OfficeTex, 0);
             _spriteLayer[0].End();
 
+            // Draw the Doors, Door Controls, and Fan
+            _spriteLayer[1].Begin();
+            Office.LeftControl.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll, Office.controlHeight), Office.numSlices);
+            Office.RightControl.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll, Office.controlHeight), Office.numSlices);
+            _spriteLayer[1].End();
+
+            // Drawing Debug Squares for door controls to
+            //_spriteLayer[2].Begin();
+            //_spriteLayer[2].Draw(Debug.tex, new Vector2(Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 15), Color.White);
+            //_spriteLayer[2].Draw(Debug.tex, new Vector2(Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 135), Color.White);
+            //_spriteLayer[2].End();
 
 
             // Draw the Night UI
@@ -660,7 +746,7 @@ namespace FNAF1_Recreation
         {
             for (int i = 0; i <= Office.numSlices; i++)
             {
-                int yPos = Math.Abs((Office.numSlices / 2) - i);
+                float yPos = Math.Abs((Office.numSlices / 2) - i) / (float)(Office.numSlices / 2);
                 Vector2 pos = new Vector2(Office.srcPosMap[i].X - Office.xScroll, tex.Height / 2);
                 _spriteLayer[layer].Draw(
                     tex, // Base Texture
@@ -669,7 +755,7 @@ namespace FNAF1_Recreation
                     Color.White,           // Color Mask, Unused in base Begin() mode
                     0,                     // Rotation
                     new Vector2(0, tex.Height / 2),         // Origin
-                    new Vector2(1, (float)(1 + Office.yPosMap[yPos])), // Scale
+                    new Vector2(1, LMath.GetYScale(yPos)), // Scale
                     SpriteEffects.None,    // Sprite Effects
                     0                      // Layer Depth - Unused with my layering system
                 );
