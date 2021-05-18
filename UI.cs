@@ -12,6 +12,8 @@ namespace FNAF1_Recreation
         public Texture2D loadTex;
         public Texture2D[] _usageTexMap;
 
+        public Texture2D camTex;
+
         public int power;
         public int powerUsage;
 
@@ -60,6 +62,12 @@ namespace FNAF1_Recreation
                 timeSeconds = 0;
                 time++;
             }
+
+            powerUsage = 1;
+            if (Office.isLeftDoorClosed) powerUsage++;
+            if (Office.isRightDoorClosed) powerUsage++;
+            if (Office.isLeftLightOn || Office.isRightLightOn) powerUsage++;
+            if (Office.isCamUp) powerUsage++;
         }
     }
 }

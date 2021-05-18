@@ -31,6 +31,10 @@ namespace FNAF1_Recreation
         SoundEffect titleStatic;
 
         SoundEffect DoorSFX;
+        SoundEffect BoopSFX;
+
+        AudioChannel sfx;
+        AudioChannel bgMus;
 
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch[] _spriteLayer;
@@ -40,6 +44,16 @@ namespace FNAF1_Recreation
         private int trueNight;
         private double startTime;
 
+        private string SavePath
+        {
+            get
+            {
+                string asmName = Assembly.GetExecutingAssembly().GetName().Name;
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                return Path.Combine(appData, $"LyraMakes\\{asmName}\\save.dat");
+            }
+        }
+        
         public int SliceWidth { get { return _graphics.PreferredBackBufferWidth / Office.numSlices + 1; } }
 
         public Game1()
@@ -54,11 +68,12 @@ namespace FNAF1_Recreation
             _graphics.ApplyChanges();
         }
 
+        // Make sure to remove Debug Texture
         protected override void Initialize()
         {
             //DEBUG ONLY
-            int dbgWid = 55;
-            int dbgHgt = 90;
+            int dbgWid = 10;
+            int dbgHgt = 10;
             Debug.tex = new Texture2D(_graphics.GraphicsDevice, dbgWid, dbgHgt);
             Color[] dbgClr = new Color[dbgWid * dbgHgt];
             for (int i = 0; i < dbgClr.Length; i++)
@@ -66,6 +81,10 @@ namespace FNAF1_Recreation
                 dbgClr[i] = new Color(255, 0, 255, 255);
             }
             Debug.tex.SetData(dbgClr);
+
+            sfx = new AudioChannel(1.0f);
+            bgMus = new AudioChannel(1.0f);
+
 
 
             //Initializes the Program-Wide RNG
@@ -83,7 +102,7 @@ namespace FNAF1_Recreation
             introAlpha = 0;
 
             // Create Static Arrays and Lists
-            Audio.channels = new List<AudioChannel>();
+            Audio.activesfx = new List<AudioEffect>();
             _spriteLayer = new SpriteBatch[5];
             
             Camera._onTex = new Texture2D[11];
@@ -106,10 +125,15 @@ namespace FNAF1_Recreation
             Office._leftControlTexMap =  new Texture2D[4];
             Office._rightControlTexMap = new Texture2D[4];
 
+            Office._leftDoorTexMap = new Texture2D[16];
+            Office._rightDoorTexMap = new Texture2D[16];
+
             Office.LeftControl = new Prop();
             Office.RightControl = new Prop();
 
-            
+            Office.LeftDoor = new Prop();
+            Office.RightDoor = new Prop();
+
             InitTitleMenu();
 
             Jumpscare._bonnieTexMap  = new Texture2D[11];
@@ -154,7 +178,7 @@ namespace FNAF1_Recreation
 
 
             // Check if save file is present
-            if(!File.Exists(GetSavePath()))
+            if(!File.Exists(SavePath))
             {
                 //If not, create one
                 Save();
@@ -356,6 +380,8 @@ namespace FNAF1_Recreation
             ui._usageTexMap[2] = Content.Load<Texture2D>("Icons\\usage3");
             ui._usageTexMap[3] = Content.Load<Texture2D>("Icons\\usage4");
             ui._usageTexMap[4] = Content.Load<Texture2D>("Icons\\usage5");
+
+            ui.camTex = Content.Load<Texture2D>("Icons\\camFlipUI");
             
             ui.loadTex = Content.Load<Texture2D>("Icons\\loading");
 
@@ -368,7 +394,40 @@ namespace FNAF1_Recreation
             Office._rightControlTexMap[1] = Content.Load<Texture2D>("Props\\RFN");
             Office._rightControlTexMap[2] = Content.Load<Texture2D>("Props\\RNF");
             Office._rightControlTexMap[3] = Content.Load<Texture2D>("Props\\RNN");
+
+            Office._leftDoorTexMap[0]  = Content.Load<Texture2D>("Props\\LDoor1");
+            Office._leftDoorTexMap[1]  = Content.Load<Texture2D>("Props\\LDoor2");
+            Office._leftDoorTexMap[2]  = Content.Load<Texture2D>("Props\\LDoor3");
+            Office._leftDoorTexMap[3]  = Content.Load<Texture2D>("Props\\LDoor4");
+            Office._leftDoorTexMap[4]  = Content.Load<Texture2D>("Props\\LDoor5");
+            Office._leftDoorTexMap[5]  = Content.Load<Texture2D>("Props\\LDoor6");
+            Office._leftDoorTexMap[6]  = Content.Load<Texture2D>("Props\\LDoor7");
+            Office._leftDoorTexMap[7]  = Content.Load<Texture2D>("Props\\LDoor8");
+            Office._leftDoorTexMap[8]  = Content.Load<Texture2D>("Props\\LDoor9");
+            Office._leftDoorTexMap[9]  = Content.Load<Texture2D>("Props\\LDoor10");
+            Office._leftDoorTexMap[10] = Content.Load<Texture2D>("Props\\LDoor11");
+            Office._leftDoorTexMap[11] = Content.Load<Texture2D>("Props\\LDoor12");
+            Office._leftDoorTexMap[12] = Content.Load<Texture2D>("Props\\LDoor13");
+            Office._leftDoorTexMap[13] = Content.Load<Texture2D>("Props\\LDoor14");
+            Office._leftDoorTexMap[14] = Content.Load<Texture2D>("Props\\LDoor15");
+            Office._leftDoorTexMap[15] = Content.Load<Texture2D>("Props\\LDoor16");
             
+            Office._rightDoorTexMap[0]  = Content.Load<Texture2D>("Props\\RDoor1");
+            Office._rightDoorTexMap[1]  = Content.Load<Texture2D>("Props\\RDoor2");
+            Office._rightDoorTexMap[2]  = Content.Load<Texture2D>("Props\\RDoor3");
+            Office._rightDoorTexMap[3]  = Content.Load<Texture2D>("Props\\RDoor4");
+            Office._rightDoorTexMap[4]  = Content.Load<Texture2D>("Props\\RDoor5");
+            Office._rightDoorTexMap[5]  = Content.Load<Texture2D>("Props\\RDoor6");
+            Office._rightDoorTexMap[6]  = Content.Load<Texture2D>("Props\\RDoor7");
+            Office._rightDoorTexMap[7]  = Content.Load<Texture2D>("Props\\RDoor8");
+            Office._rightDoorTexMap[8]  = Content.Load<Texture2D>("Props\\RDoor9");
+            Office._rightDoorTexMap[9]  = Content.Load<Texture2D>("Props\\RDoor10");
+            Office._rightDoorTexMap[10] = Content.Load<Texture2D>("Props\\RDoor11");
+            Office._rightDoorTexMap[11] = Content.Load<Texture2D>("Props\\RDoor12");
+            Office._rightDoorTexMap[12] = Content.Load<Texture2D>("Props\\RDoor13");
+            Office._rightDoorTexMap[13] = Content.Load<Texture2D>("Props\\RDoor14");
+            Office._rightDoorTexMap[14] = Content.Load<Texture2D>("Props\\RDoor15");
+            Office._rightDoorTexMap[15] = Content.Load<Texture2D>("Props\\RDoor16");
 
 
             // Audio
@@ -377,15 +436,19 @@ namespace FNAF1_Recreation
             titleStatic      = Content.Load<SoundEffect>("Audio\\static2");
 
             DoorSFX = Content.Load<SoundEffect>("Audio\\doorToggle");
+            BoopSFX = Content.Load<SoundEffect>("Audio\\noseBoop");
 
             // Post Content Initialization
             for (int i = 0; i < Office.numSlices + 1; i++)
             {
                 Office.srcPosMap[i] = new Rectangle(i * SliceWidth, 0, SliceWidth, Office._officeTexMap[0].Height);
             }
+
             Office.LeftControl.SetTex(Office.LeftControlTex, SliceWidth);
             Office.RightControl.SetTex(Office.RightControlTex, SliceWidth);
 
+            Office.LeftDoor.SetTex(Office._leftDoorTexMap[Office.leftDoorTex], SliceWidth);
+            Office.RightDoor.SetTex(Office._rightDoorTexMap[Office.rightDoorTex], SliceWidth);
         }
 
         protected override void Update(GameTime gameTime)
@@ -471,11 +534,12 @@ namespace FNAF1_Recreation
             if (gameTime.TotalGameTime.TotalSeconds >= 5)
             {
                 gameState = GameState.MENU;
-                Audio.Play(titleStatic);
-                Audio.Play(titleSong, true);
+                Audio.Play(titleStatic, bgMus);
+                Audio.Play(titleSong, bgMus, true);
             }
         }
 
+        // TODO - New Game Fade to newspaper
         private void UpdateTitleScreen(GameTime gameTime)
         {
             // Randomize Static Texture
@@ -520,7 +584,7 @@ namespace FNAF1_Recreation
             for (int i = 0; i < TitleScreen.menuOptions.Count; i++)
             {
                 // res would be whether the mouse is above menu option "i"
-                bool res = Collide(Input.GetMousePos(), 200, 400 + i * 80, 300, 50);
+                bool res = Collide(Input.MousePos, 200, 400 + i * 80, 300, 50);
                 if (res)
                 {
                     if (TitleScreen.selected != i)
@@ -575,6 +639,7 @@ namespace FNAF1_Recreation
         }
 
         // TODO - The actual game logic... not just the ui updates and visuals
+        // (>_<) ~(>_<~) (T_T)
         private void UpdateNight(GameTime gameTime)
         {
             ui.OnTick(gameTime);
@@ -583,8 +648,11 @@ namespace FNAF1_Recreation
             int gPBBW = _graphics.PreferredBackBufferWidth;
             int gPBBH = _graphics.PreferredBackBufferHeight;
 
-            if (Collide(Input.GetMousePos(), 0, 0, 500, gPBBH)) Office.xScroll -= 10;
-            if (Collide(Input.GetMousePos(), gPBBW - 500, 0, 500, gPBBH)) Office.xScroll += 10;
+            if (Collide(Input.MousePos, 0, 0, 500, gPBBH)) Office.xScroll -= 10;
+            if (Collide(Input.MousePos, gPBBW - 500, 0, 500, gPBBH)) Office.xScroll += 10;
+
+            if (Input.GetMouseDown() && Collide(Input.MousePos, 675 - Office.xScroll, 215, 10, 30))
+                Audio.Play(BoopSFX, sfx);
 
             int scrollMax = -1 * (gPBBW - Office.OfficeTex.Width);
             if (Office.xScroll < 0) Office.xScroll = 0;
@@ -596,29 +664,60 @@ namespace FNAF1_Recreation
                 Office.srcPosMap[i].X = Office.xScroll + (i * width);
             }
 
-            // Door Controls logic:
+            if (Office.isLeftDoorClosed && Office.leftDoorTex < 15)
+            {
+                if (Office.changeLeftDoor) Office.leftDoorTex++ ;
+                Office.changeLeftDoor = !Office.changeLeftDoor;
+            }
+            if (!Office.isLeftDoorClosed && Office.leftDoorTex > 0)
+            {
+                if (Office.changeLeftDoor) Office.leftDoorTex--;
+                Office.changeLeftDoor = !Office.changeLeftDoor;
+            }
+
+            if (Office.isRightDoorClosed && Office.rightDoorTex < 15)
+            {
+                if (Office.changeRightDoor) Office.rightDoorTex++;
+                Office.changeRightDoor = !Office.changeRightDoor;
+            }
+            if (!Office.isRightDoorClosed && Office.rightDoorTex > 0)
+            {
+                if (Office.changeRightDoor) Office.rightDoorTex--;
+                Office.changeRightDoor = !Office.changeRightDoor;
+            }
+
+            Office.LeftDoor.SetTex(Office._leftDoorTexMap[Office.leftDoorTex], SliceWidth);
+            Office.RightDoor.SetTex(Office._rightDoorTexMap[Office.rightDoorTex], SliceWidth);
+
+
+            UpdateOfficeDoors();
+
+        }
+
+        private void UpdateOfficeDoors()
+        {
             if (Office.leftDoorTimer > 0) Office.leftDoorTimer--;
             if (Office.rightDoorTimer > 0) Office.rightDoorTimer--;
 
-            if (Office.leftDoorTimer == 0 && Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.leftXPos - Office.xScroll + 20, Office.controlHeight + 15, 55, 90))
+            if (Office.leftDoorTimer == 0 && Input.GetMouseDown() && Collide(Input.MousePos, Office.leftXPos - Office.xScroll + 20, Office.controlHeight + 15, 55, 90))
             {
-                Office.leftDoorTimer = 30;
-                Audio.Play(DoorSFX);
+                Office.leftDoorTimer = 20;
+                Audio.Play(DoorSFX, sfx);
                 Office.isLeftDoorClosed = !Office.isLeftDoorClosed;
             }
-            if (Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.leftXPos - Office.xScroll + 20, Office.controlHeight + 135, 55, 90))
+            if (Input.GetMouseDown() && Collide(Input.MousePos, Office.leftXPos - Office.xScroll + 20, Office.controlHeight + 135, 55, 90))
             {
                 Office.isLeftLightOn = !Office.isLeftLightOn;
                 Office.isRightLightOn = false;
             }
 
-            if (Office.rightDoorTimer == 0 && Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 15, 55, 90))
+            if (Office.rightDoorTimer == 0 && Input.GetMouseDown() && Collide(Input.MousePos, Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 15, 55, 90))
             {
-                Office.rightDoorTimer = 30;
-                Audio.Play(DoorSFX);
+                Office.rightDoorTimer = 20;
+                Audio.Play(DoorSFX, sfx);
                 Office.isRightDoorClosed = !Office.isRightDoorClosed;
             }
-            if (Input.GetMouseDown() && Collide(Input.GetMousePos(), Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 135, 55, 90))
+            if (Input.GetMouseDown() && Collide(Input.MousePos, Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 135, 55, 90))
             {
                 Office.isRightLightOn = !Office.isRightLightOn;
                 Office.isLeftLightOn = false;
@@ -626,11 +725,9 @@ namespace FNAF1_Recreation
 
             Office.LeftControl.SetTex(Office.LeftControlTex, SliceWidth);
             Office.RightControl.SetTex(Office.RightControlTex, SliceWidth);
-
-
         }
 
-            private void DrawIntro()
+        private void DrawIntro()
         {
             _spriteLayer[3].Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
             _spriteLayer[3].DrawString(titleFont, Program.Disclaimer, new Vector2(150, 200), Color.White * (introAlpha / 100f));
@@ -710,16 +807,19 @@ namespace FNAF1_Recreation
             DrawTexPerspective(Office.OfficeTex, 0);
             _spriteLayer[0].End();
 
+            float gPBBW = _graphics.PreferredBackBufferWidth;
+
             // Draw the Doors, Door Controls, and Fan
             _spriteLayer[1].Begin();
-            Office.LeftControl.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll, Office.controlHeight), Office.numSlices);
-            Office.RightControl.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll, Office.controlHeight), Office.numSlices);
+            Office.LeftDoor.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll + 60, 0), gPBBW);
+            Office.RightDoor.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll - 210, 0), gPBBW);
+            Office.LeftControl.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll, Office.controlHeight), gPBBW);
+            Office.RightControl.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll, Office.controlHeight), gPBBW);
             _spriteLayer[1].End();
 
-            // Drawing Debug Squares for door controls to
+            // Drawing Debug Square For freddy nose, Camera pos
             //_spriteLayer[2].Begin();
-            //_spriteLayer[2].Draw(Debug.tex, new Vector2(Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 15), Color.White);
-            //_spriteLayer[2].Draw(Debug.tex, new Vector2(Office.rightXPos - Office.xScroll + 20, Office.controlHeight + 135), Color.White);
+            //_spriteLayer[2].Draw(Debug.tex, new Vector2(675 - Office.xScroll, 220), Color.White);
             //_spriteLayer[2].End();
 
 
@@ -737,6 +837,7 @@ namespace FNAF1_Recreation
 
             _spriteLayer[3].DrawString(labelFont, "Usage:", new Vector2(20, bottomYPos), Color.White);
             _spriteLayer[3].Draw(ui._usageTexMap[ui.powerUsage - 1], new Vector2(115, bottomYPos), Color.White);
+            _spriteLayer[3].Draw(ui.camTex, new Vector2(270, bottomYPos - 30), Color.White);
             _spriteLayer[3].End();
 
         }
@@ -746,8 +847,9 @@ namespace FNAF1_Recreation
         {
             for (int i = 0; i <= Office.numSlices; i++)
             {
-                float yPos = Math.Abs((Office.numSlices / 2) - i) / (float)(Office.numSlices / 2);
+                float gPBBW = _graphics.PreferredBackBufferWidth;
                 Vector2 pos = new Vector2(Office.srcPosMap[i].X - Office.xScroll, tex.Height / 2);
+                float yPos = Math.Abs((gPBBW / 2f) - pos.X) / gPBBW;
                 _spriteLayer[layer].Draw(
                     tex, // Base Texture
                     pos,                   // Position
@@ -776,16 +878,10 @@ namespace FNAF1_Recreation
             return (x <= pos.X && pos.X <= x + width) && (y <= pos.Y && pos.Y <= y + height);
         }
 
-        private string GetSavePath()
-        {
-            string asmName = Assembly.GetExecutingAssembly().GetName().Name;
-            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            return Path.Combine(appData, $"LyraMakes\\{asmName}\\save.dat");
-        }
 
         private void Save(byte data)
         {
-            string fileName = GetSavePath();
+            string fileName = SavePath;
 
             if (!File.Exists(fileName)) Directory.CreateDirectory(Path.GetDirectoryName(fileName));
 
@@ -816,7 +912,7 @@ namespace FNAF1_Recreation
 
         private void Load()
         {
-            string filename = GetSavePath();
+            string filename = SavePath;
             byte[] dataArr = File.ReadAllBytes(filename);
             if (dataArr.Length != 1) Save(0b001_00_00_0);
 

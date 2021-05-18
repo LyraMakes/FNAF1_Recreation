@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace FNAF1_Recreation
 {
-    class Office
+    static class Office
     {
         public static Texture2D[] _officeTexMap;
 
@@ -17,11 +13,25 @@ namespace FNAF1_Recreation
         public static Texture2D LeftControlTex { get { return GetControlTex(_leftControlTexMap, isLeftDoorClosed, isLeftLightOn); } }
         public static Texture2D RightControlTex { get { return GetControlTex(_rightControlTexMap, isRightDoorClosed, isRightLightOn); } }
 
+        public static Texture2D[] _leftDoorTexMap;
+        public static Texture2D[] _rightDoorTexMap;
+
+
         public static Prop LeftControl;
         public static Prop RightControl;
 
+        public static Prop LeftDoor;
+        public static Prop RightDoor;
+
+
         public static int leftDoorTimer = 0;
         public static int rightDoorTimer = 0;
+
+        public static int leftDoorTex = 0;
+        public static int rightDoorTex = 0;
+
+        public static bool changeLeftDoor = true;
+        public static bool changeRightDoor = true; 
 
         public static bool isLeftDoorClosed = false;
         public static bool isRightDoorClosed = false;
@@ -29,18 +39,19 @@ namespace FNAF1_Recreation
         public static bool isLeftLightOn = false;
         public static bool isRightLightOn = false;
 
+        public static bool isCamUp = false;
+
         public static int controlHeight = 280;
 
         public static int leftXPos = 10; 
         public static int rightXPos = 1480;
 
-
-        public static bool hasBonnie = true;
-        public static bool hasChica = true;
+        public static bool doorHasBonnie = false;
+        public static bool doorHasChica = false;
 
         public static int xScroll = 150;
 
-        public static int numSlices = 60;
+        public static int numSlices = 2048;
 
         public static double[] yPosMap;
 
@@ -48,8 +59,8 @@ namespace FNAF1_Recreation
 
         public static Texture2D OfficeTex { get
         {
-            if (isLeftLightOn) return _officeTexMap[hasBonnie ? 3 : 1];
-            if (isRightLightOn) return _officeTexMap[hasChica ? 4 : 2];
+            if (isLeftLightOn) return _officeTexMap[doorHasBonnie ? 3 : 1];
+            if (isRightLightOn) return _officeTexMap[doorHasChica ? 4 : 2];
 
             return _officeTexMap[0];
         } }

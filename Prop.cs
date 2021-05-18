@@ -32,15 +32,12 @@ namespace FNAF1_Recreation
             //srcMap[numRects]
         }
 
-        public void Draw (SpriteBatch spriteLayer, Vector2 pos, int numSlices)
+        public void Draw (SpriteBatch spriteLayer, Vector2 pos, float gPBBW)
         {
             for (int i = 0; i < srcMap.Length; i++)
             {
-                //if (pos.X + tex.Width < i * srcMap[0].Width) continue;
-                //if (pos.X > i * srcMap[0].Width) continue;
-
-                float yOffset = Math.Abs((numSlices / 2) - i) / (float)(numSlices / 2);
                 Vector2 newPos = new Vector2(srcMap[i].X + pos.X, pos.Y + tex.Height / 2);
+                float yOffset = Math.Abs((gPBBW / 2f) - newPos.X) / gPBBW;
                 spriteLayer.Draw(
                     tex,
                     newPos,

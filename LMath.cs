@@ -2,6 +2,6 @@
 {
     static class LMath
     {
-        public static float GetYScale(float offset) => 1 + (0.6f * offset * offset);
+        public static float GetYScale(float offset) => 1 + (4f * offset * offset);
     }
 }

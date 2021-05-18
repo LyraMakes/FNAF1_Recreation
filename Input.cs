@@ -15,7 +15,7 @@ namespace FNAF1_Recreation
         public static bool IsMouseDown() => MouseState.LeftButton == ButtonState.Pressed;
         public static bool GetMouseUp() => MouseState.LeftButton == ButtonState.Released && PrevMouseState.LeftButton != ButtonState.Released;
 
-        public static Vector2 GetMousePos() => new Vector2(MouseState.X, MouseState.Y);
+        public static Vector2 MousePos { get { return new Vector2(MouseState.X, MouseState.Y); } }
 
         public static bool GetKeyDown(Keys k) => KeyboardState.IsKeyDown(k) && !PrevKeyboardState.IsKeyDown(k);
         public static bool IsKeyDown(Keys k) => KeyboardState.IsKeyDown(k);
