@@ -2,45 +2,31 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FNAF1_Recreation
+namespace FNAF1_Recreation.Animatronics
 {
     class Animatronic
     {
         public string name;
-        public int id;
 
-        private readonly IAnimatronicBehavior behavior;
-        private AnimatronicLevel AILevel;
-        private readonly Rand rand;
+        protected AnimatronicLevel AILevel;
+        protected readonly Rand rand;
 
+        public double moveStartTime;
         public double movementOffset;
 
-        public Animatronic(string n, int i, IAnimatronicBehavior b, Rand r)
+        public Animatronic(Rand r)
         {
-            name = n;
-            id = i;
-            behavior = b;
+            name = "TEMP";
             AILevel = 0;
             rand = r;
         }
 
-        public Animatronic SetMovemetOffset(double offset)
+        public void SetAILevel(int l) => AILevel = l;
+
+        public bool MovementOpportunity()
         {
-            movementOffset = offset;
-            return this;
+            Debug.WriteLine($"Using {AILevel} / 20 for MO calc");
+            return rand.Next() <= AILevel;
         }
-
-        public Animatronic SetAILevel(int l)
-        {
-            AILevel = l;
-            return this;
-        }
-
-        //Run Per tick
-        public void OnTick() => behavior.OnTick();
-
-        public void OnHour(int hour) => AILevel += (behavior.OnHour(hour)) ? 1 : 0;
-
-        public bool MovementOpportunity() => rand.Next() <= AILevel;
     }
 }

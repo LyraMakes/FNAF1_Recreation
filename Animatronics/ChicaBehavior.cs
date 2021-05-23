@@ -21,7 +21,6 @@ namespace FNAF1_Recreation.Animatronics
             path.AddRoom(Room.rooms[4]);
             path.AddRoom(Room.rooms[5]);
             path.AddRoom(Room.rooms[8]);
-
         }
 
         public void OnTick()

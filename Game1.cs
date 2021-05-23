@@ -21,7 +21,6 @@ namespace FNAF1_Recreation
 
         public GameState gameState;
 
-        Animatronic[] animatronics;
         SpriteFont textFont;
         SpriteFont titleFont;
         SpriteFont labelFont;
@@ -32,9 +31,17 @@ namespace FNAF1_Recreation
 
         SoundEffect DoorSFX;
         SoundEffect BoopSFX;
+        SoundEffect camFlipSFX;
 
         AudioChannel sfx;
         AudioChannel bgMus;
+
+        //Animatronics
+        Freddy freddy;
+        Bonnie bonnie;
+        Chica chica;
+        Foxy foxy;
+
 
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch[] _spriteLayer;
@@ -128,6 +135,8 @@ namespace FNAF1_Recreation
             Office._leftDoorTexMap = new Texture2D[16];
             Office._rightDoorTexMap = new Texture2D[16];
 
+            Camera.TabletTexMap = new Texture2D[11];
+
             Office.LeftControl = new Prop();
             Office.RightControl = new Prop();
 
@@ -142,43 +151,20 @@ namespace FNAF1_Recreation
             Jumpscare._freddyATexMap = new Texture2D[31];
             Jumpscare._freddyBTexMap = new Texture2D[21];
 
+            Room.InitRooms();
 
-            //Initialize Rooms
-            Room.rooms = new Room[15];
-            Room.rooms[0] = new Room("Show Stage");
-            Room.rooms[1] = new Room("Dining Area");
-            Room.rooms[2] = new Room("Pirate Cove");
-            Room.rooms[3] = new Room("West Hall");
-            Room.rooms[4] = new Room("W. Hall Corner");
-            Room.rooms[5] = new Room("Supply Closet");
-            Room.rooms[6] = new Room("East Hall");
-            Room.rooms[7] = new Room("E. Hall Corner");
-            Room.rooms[8] = new Room("Backstage");
-            Room.rooms[9] = new Room("Kitchen");
-            Room.rooms[10] = new Room("Restrooms");
-
-            //Non-Visible
-            Room.rooms[11] = new Room("Left Door");
-            Room.rooms[12] = new Room("Right Door");
-            Room.rooms[13] = new Room("Left Office In");
-            Room.rooms[14] = new Room("Right Office In");
+            Camera.CurrentRoom = Room.rooms[0];
 
 
             //Animatronic Setup
-            animatronics = new Animatronic[4];
-            animatronics[0] = new Animatronic("Freddy", 1, new FreddyBehavior(), rand);
-            animatronics[1] = new Animatronic("Bonnie", 2, new BonnieBehavior(rand), rand);
-            animatronics[2] = new Animatronic("Chica", 3, new ChicaBehavior(), rand);
-            animatronics[3] = new Animatronic("Foxy", 4, new FoxyBehavior(), rand);
-
-            animatronics[0].SetMovemetOffset(3.02);
-            animatronics[1].SetMovemetOffset(4.97);
-            animatronics[2].SetMovemetOffset(4.98);
-            animatronics[3].SetMovemetOffset(5.01);
+            freddy = new Freddy(rand);
+            bonnie = new Bonnie(rand);
+            chica = new Chica(rand);
+            foxy = new Foxy(rand);
 
 
             // Check if save file is present
-            if(!File.Exists(SavePath))
+            if (!File.Exists(SavePath))
             {
                 //If not, create one
                 Save();
@@ -190,7 +176,7 @@ namespace FNAF1_Recreation
                 InitTitleMenu();
             }
 
-            trueNight = TitleScreen.currentNight;
+            
 
             base.Initialize();
         }
@@ -429,6 +415,70 @@ namespace FNAF1_Recreation
             Office._rightDoorTexMap[14] = Content.Load<Texture2D>("Props\\RDoor15");
             Office._rightDoorTexMap[15] = Content.Load<Texture2D>("Props\\RDoor16");
 
+            Camera.TabletTexMap[0] = Content.Load<Texture2D>("Images\\tablet0");
+            Camera.TabletTexMap[1] = Content.Load<Texture2D>("Images\\tablet1");
+            Camera.TabletTexMap[2] = Content.Load<Texture2D>("Images\\tablet2");
+            Camera.TabletTexMap[3] = Content.Load<Texture2D>("Images\\tablet3");
+            Camera.TabletTexMap[4] = Content.Load<Texture2D>("Images\\tablet4");
+            Camera.TabletTexMap[5] = Content.Load<Texture2D>("Images\\tablet5");
+            Camera.TabletTexMap[6] = Content.Load<Texture2D>("Images\\tablet6");
+            Camera.TabletTexMap[7] = Content.Load<Texture2D>("Images\\tablet7");
+            Camera.TabletTexMap[8] = Content.Load<Texture2D>("Images\\tablet8");
+            Camera.TabletTexMap[9] = Content.Load<Texture2D>("Images\\tablet9");
+            Camera.TabletTexMap[10] = Content.Load<Texture2D>("Images\\tablet10");
+
+
+            Room.rooms[0].roomTexMap = new Texture2D[7];
+            Room.rooms[0].roomTexMap[0] = Content.Load<Texture2D>("Rooms\\CAM1A-");
+            Room.rooms[0].roomTexMap[1] = Content.Load<Texture2D>("Rooms\\CAM1A-FBC");
+            Room.rooms[0].roomTexMap[2] = Content.Load<Texture2D>("Rooms\\CAM1A-FBC-S");
+            Room.rooms[0].roomTexMap[3] = Content.Load<Texture2D>("Rooms\\CAM1A-FB");
+            Room.rooms[0].roomTexMap[4] = Content.Load<Texture2D>("Rooms\\CAM1A-FC");
+            Room.rooms[0].roomTexMap[5] = Content.Load<Texture2D>("Rooms\\CAM1A-F");
+            Room.rooms[0].roomTexMap[6] = Content.Load<Texture2D>("Rooms\\CAM1A-F-S");
+
+            Room.rooms[1].roomTexMap = new Texture2D[6];
+            Room.rooms[1].roomTexMap[1] = Content.Load<Texture2D>("Rooms\\CAM1B-");
+            Room.rooms[1].roomTexMap[2] = Content.Load<Texture2D>("Rooms\\CAM1B-B");
+            Room.rooms[1].roomTexMap[3] = Content.Load<Texture2D>("Rooms\\CAM1B-B-S");
+            Room.rooms[1].roomTexMap[4] = Content.Load<Texture2D>("Rooms\\CAM1B-C");
+            Room.rooms[1].roomTexMap[5] = Content.Load<Texture2D>("Rooms\\CAM1B-C-S");
+            Room.rooms[1].roomTexMap[6] = Content.Load<Texture2D>("Rooms\\CAM1B-F");
+
+            Room.rooms[4].roomTexMap = new Texture2D[6];
+            Room.rooms[4].roomTexMap[0] = Content.Load<Texture2D>("Rooms\\CAM2B-");
+            Room.rooms[4].roomTexMap[1] = Content.Load<Texture2D>("Rooms\\CAM2B-S1");
+            Room.rooms[4].roomTexMap[2] = Content.Load<Texture2D>("Rooms\\CAM2B-S2");
+            Room.rooms[4].roomTexMap[3] = Content.Load<Texture2D>("Rooms\\CAM2B-B");
+            Room.rooms[4].roomTexMap[4] = Content.Load<Texture2D>("Rooms\\CAM2B-B-S1");
+            Room.rooms[4].roomTexMap[5] = Content.Load<Texture2D>("Rooms\\CAM2B-B-S2");
+
+            Room.rooms[5].roomTexMap = new Texture2D[2];
+            Room.rooms[5].roomTexMap[0] = Content.Load<Texture2D>("Rooms\\CAM3-");
+            Room.rooms[5].roomTexMap[1] = Content.Load<Texture2D>("Rooms\\CAM3-B");
+
+            Room.rooms[6].roomTexMap = new Texture2D[6];
+            Room.rooms[6].roomTexMap[0] = Content.Load<Texture2D>("Rooms\\CAM4A-");
+            Room.rooms[6].roomTexMap[1] = Content.Load<Texture2D>("Rooms\\CAM4A-S");
+            Room.rooms[6].roomTexMap[2] = Content.Load<Texture2D>("Rooms\\CAM4A-S2");
+            Room.rooms[6].roomTexMap[3] = Content.Load<Texture2D>("Rooms\\CAM4A-C");
+            Room.rooms[6].roomTexMap[4] = Content.Load<Texture2D>("Rooms\\CAM4A-C-S");
+            Room.rooms[6].roomTexMap[5] = Content.Load<Texture2D>("Rooms\\CAM4A-F");
+
+            Room.rooms[8].roomTexMap = new Texture2D[4];
+            Room.rooms[8].roomTexMap[0] = Content.Load<Texture2D>("Rooms\\CAM5-");
+            Room.rooms[8].roomTexMap[1] = Content.Load<Texture2D>("Rooms\\CAM5-S");
+            Room.rooms[8].roomTexMap[2] = Content.Load<Texture2D>("Rooms\\CAM5-B");
+            Room.rooms[8].roomTexMap[3] = Content.Load<Texture2D>("Rooms\\CAM5-B-S");
+
+            Room.rooms[10].roomTexMap = new Texture2D[4];
+            Room.rooms[10].roomTexMap[0] = Content.Load<Texture2D>("Rooms\\CAM7-");
+            Room.rooms[10].roomTexMap[1] = Content.Load<Texture2D>("Rooms\\CAM7-C");
+            Room.rooms[10].roomTexMap[2] = Content.Load<Texture2D>("Rooms\\CAM7-C-S");
+            Room.rooms[10].roomTexMap[3] = Content.Load<Texture2D>("Rooms\\CAM7-F");
+
+
+
 
             // Audio
             titleSong        = Content.Load<SoundEffect>("Audio\\titleScreen");
@@ -437,6 +487,7 @@ namespace FNAF1_Recreation
 
             DoorSFX = Content.Load<SoundEffect>("Audio\\doorToggle");
             BoopSFX = Content.Load<SoundEffect>("Audio\\noseBoop");
+            camFlipSFX = Content.Load<SoundEffect>("Audio\\monitorFlip");
 
             // Post Content Initialization
             for (int i = 0; i < Office.numSlices + 1; i++)
@@ -639,11 +690,40 @@ namespace FNAF1_Recreation
         }
 
         // TODO - The actual game logic... not just the ui updates and visuals
-        // (>_<) ~(>_<~) (T_T)
+        // (>_<) ~(>_<~) (T_T) >>_<<
         private void UpdateNight(GameTime gameTime)
         {
             ui.OnTick(gameTime);
 
+            double gTTGTTS = gameTime.TotalGameTime.TotalSeconds;
+            if (freddy.moveStartTime + freddy.movementOffset < gTTGTTS) freddy.MovementOpportunity();
+            if (bonnie.moveStartTime + bonnie.movementOffset < gTTGTTS) bonnie.MovementOpportunity();
+            if (chica.moveStartTime + chica.movementOffset < gTTGTTS) chica.MovementOpportunity();
+            if (foxy.moveStartTime + foxy.movementOffset < gTTGTTS) foxy.MovementOpportunity();
+
+
+            UpdateCameraFlip();
+
+            if (!Office.isCamUp)
+            {
+                UpdateStandardOffice();
+                UpdateOfficeDoors();
+            }
+            else
+            {
+                UpdateCameras();
+            }
+        }
+
+        private void UpdateCameras()
+        {
+            // Freddy, Bonnie, Chica, Foxy
+            //if (Camera.CurrentRoom == animatronics[0])
+            
+        }
+
+        private void UpdateStandardOffice()
+        {
             // Scrolling logic -------
             int gPBBW = _graphics.PreferredBackBufferWidth;
             int gPBBH = _graphics.PreferredBackBufferHeight;
@@ -666,7 +746,7 @@ namespace FNAF1_Recreation
 
             if (Office.isLeftDoorClosed && Office.leftDoorTex < 15)
             {
-                if (Office.changeLeftDoor) Office.leftDoorTex++ ;
+                if (Office.changeLeftDoor) Office.leftDoorTex++;
                 Office.changeLeftDoor = !Office.changeLeftDoor;
             }
             if (!Office.isLeftDoorClosed && Office.leftDoorTex > 0)
@@ -688,10 +768,6 @@ namespace FNAF1_Recreation
 
             Office.LeftDoor.SetTex(Office._leftDoorTexMap[Office.leftDoorTex], SliceWidth);
             Office.RightDoor.SetTex(Office._rightDoorTexMap[Office.rightDoorTex], SliceWidth);
-
-
-            UpdateOfficeDoors();
-
         }
 
         private void UpdateOfficeDoors()
@@ -725,6 +801,26 @@ namespace FNAF1_Recreation
 
             Office.LeftControl.SetTex(Office.LeftControlTex, SliceWidth);
             Office.RightControl.SetTex(Office.RightControlTex, SliceWidth);
+        }
+
+        private void UpdateCameraFlip()
+        {
+            if (Collide(Input.MousePos, 270, 653, 600, 60))
+            {
+                if (Office.hasLeftCamBox)
+                {
+                    Office.hasLeftCamBox = false;
+                    if (!Office.isCamUp && Camera.TabletTexOffset == -1) Office.ToggleCam(camFlipSFX, sfx);
+                    if (Office.isCamUp && Camera.TabletTexOffset == 11) Office.ToggleCam(camFlipSFX, sfx);
+                }
+            }
+            else
+            {
+                Office.hasLeftCamBox = true;
+            }
+
+            if (Office.isCamUp && Camera.TabletTexOffset < 11) Camera.TabletTexOffset++;
+            if (!Office.isCamUp && Camera.TabletTexOffset > -1) Camera.TabletTexOffset--;
         }
 
         private void DrawIntro()
@@ -803,24 +899,27 @@ namespace FNAF1_Recreation
         private void DrawNight()
         {
             // Drawing the BG Layer
-            _spriteLayer[0].Begin();
-            DrawTexPerspective(Office.OfficeTex, 0);
-            _spriteLayer[0].End();
+            if (Camera.TabletTexOffset < 11)
+            {
+                _spriteLayer[0].Begin();
+                DrawBackgroundTex(Office.OfficeTex, Office.xScroll);
+                _spriteLayer[0].End();
 
-            float gPBBW = _graphics.PreferredBackBufferWidth;
+                float gPBBW = _graphics.PreferredBackBufferWidth;
 
-            // Draw the Doors, Door Controls, and Fan
-            _spriteLayer[1].Begin();
-            Office.LeftDoor.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll + 60, 0), gPBBW);
-            Office.RightDoor.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll - 210, 0), gPBBW);
-            Office.LeftControl.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll, Office.controlHeight), gPBBW);
-            Office.RightControl.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll, Office.controlHeight), gPBBW);
-            _spriteLayer[1].End();
-
-            // Drawing Debug Square For freddy nose, Camera pos
-            //_spriteLayer[2].Begin();
-            //_spriteLayer[2].Draw(Debug.tex, new Vector2(675 - Office.xScroll, 220), Color.White);
-            //_spriteLayer[2].End();
+                // Draw the Doors, Door Controls, and Fan
+                _spriteLayer[1].Begin();
+                Office.LeftDoor.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll + 60, 0), gPBBW);
+                Office.RightDoor.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll - 210, 0), gPBBW);
+                Office.LeftControl.Draw(_spriteLayer[1], new Vector2(Office.leftXPos - Office.xScroll, Office.controlHeight), gPBBW);
+                Office.RightControl.Draw(_spriteLayer[1], new Vector2(Office.rightXPos - Office.xScroll, Office.controlHeight), gPBBW);
+                _spriteLayer[1].End();
+            }
+            else
+            {
+                _spriteLayer[0].Begin();
+                DrawBackgroundTex(Camera.CurrentRoom.roomTex, Camera.scroll);
+            }
 
 
             // Draw the Night UI
@@ -833,24 +932,35 @@ namespace FNAF1_Recreation
             _spriteLayer[3].DrawString(titleFont, time, new Vector2(timeOffset, 30), Color.White);
             _spriteLayer[3].DrawString(labelFont, $"Night {TitleScreen.currentNight}", new Vector2(1160, 80), Color.White);
 
-            _spriteLayer[3].DrawString(labelFont, $"Power left: {ui.power}%", new Vector2(20, bottomYPos - 40), Color.White);
+            _spriteLayer[3].DrawString(labelFont, $"Power left: {ui.power / 10}%", new Vector2(20, bottomYPos - 40), Color.White);
 
             _spriteLayer[3].DrawString(labelFont, "Usage:", new Vector2(20, bottomYPos), Color.White);
             _spriteLayer[3].Draw(ui._usageTexMap[ui.powerUsage - 1], new Vector2(115, bottomYPos), Color.White);
             _spriteLayer[3].Draw(ui.camTex, new Vector2(270, bottomYPos - 30), Color.White);
             _spriteLayer[3].End();
 
+            if (Camera.DrawCam)
+            {
+                _spriteLayer[4].Begin();
+                _spriteLayer[4].Draw(Camera.TabletTex, Vector2.Zero, Color.White);
+                _spriteLayer[4].End();
+            }
+
         }
 
-        // Oh my god this is such garbage but it works
-        private void DrawTexPerspective(Texture2D tex, int layer)
+        /// <summary>
+        /// Draws a the provided <c>Texture2D</c> at the specified scroll to the background layer
+        /// </summary>
+        /// <param name="tex">The texture to use</param>
+        /// <param name="scroll">Horizontal scroll</param>
+        private void DrawBackgroundTex(Texture2D tex, int scroll)
         {
             for (int i = 0; i <= Office.numSlices; i++)
             {
                 float gPBBW = _graphics.PreferredBackBufferWidth;
-                Vector2 pos = new Vector2(Office.srcPosMap[i].X - Office.xScroll, tex.Height / 2);
+                Vector2 pos = new Vector2(Office.srcPosMap[i].X - scroll, tex.Height / 2);
                 float yPos = Math.Abs((gPBBW / 2f) - pos.X) / gPBBW;
-                _spriteLayer[layer].Draw(
+                _spriteLayer[0].Draw(
                     tex, // Base Texture
                     pos,                   // Position
                     Office.srcPosMap[i],   // Source on Tex
@@ -864,6 +974,7 @@ namespace FNAF1_Recreation
             }
         }
 
+
         private void InitTitleMenu()
         {
             TitleScreen.menuOptions.Clear();
@@ -871,13 +982,14 @@ namespace FNAF1_Recreation
             TitleScreen.menuOptions.Add("Continue");
             if (TitleScreen.Night6Unlocked) TitleScreen.menuOptions.Add("6th Night");
             if (TitleScreen.Night7Unlocked) TitleScreen.menuOptions.Add("7th Night");
+
+            trueNight = TitleScreen.currentNight;
         }
 
         private bool Collide(Vector2 pos, int x, int y, int width, int height)
         {
             return (x <= pos.X && pos.X <= x + width) && (y <= pos.Y && pos.Y <= y + height);
         }
-
 
         private void Save(byte data)
         {
@@ -926,6 +1038,10 @@ namespace FNAF1_Recreation
 
         private void StartNight(int night, GameTime gameTime)
         {
+            AnimatronicLevel[] levels = AnimatronicLevel.NightPreset(night, rand);
+
+            bonnie.SetAILevel(levels[1]);
+
             gameState = GameState.NIGHT_INTRO;
             TitleScreen.currentNight = night;
             Audio.StopAll();

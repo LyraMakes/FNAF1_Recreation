@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
 
 namespace FNAF1_Recreation
 {
@@ -40,6 +41,7 @@ namespace FNAF1_Recreation
         public static bool isRightLightOn = false;
 
         public static bool isCamUp = false;
+        public static bool hasLeftCamBox = true;
 
         public static int controlHeight = 280;
 
@@ -68,6 +70,13 @@ namespace FNAF1_Recreation
         private static Texture2D GetControlTex(Texture2D[] texMap, bool door, bool light)
         {
             return texMap[door ? ((light) ? 3 : 2) : ((light) ? 1 : 0)];
+        }
+
+        public static bool ToggleCam(SoundEffect sfx, AudioChannel chn)
+        {
+            Audio.Play(sfx, chn);
+            isCamUp = !isCamUp;
+            return isCamUp;
         }
     }
 }

@@ -22,33 +22,46 @@ namespace FNAF1_Recreation
 
         double startTime;
 
+        public bool BonnieInc = false;
+        public bool ChicaInc = false;
+        public bool FoxyInc = false;
+
+
+        private int powerSecs;
+
         public UI()
         {
-            power = 99;
+            power = 999;
             powerUsage = 1;
             time = 12;
             timeSeconds = 0;
+            
+            powerSecs = 0;
         }
 
-        public void SetStartTime(GameTime gameTime)
-        {
-            startTime = gameTime.TotalGameTime.TotalSeconds;
-        }
+        public void SetStartTime(GameTime gameTime) => startTime = gameTime.TotalGameTime.TotalSeconds;
 
         public void Reset()
         {
-            power = 99;
+            power = 999;
             powerUsage = 1;
             time = 12;
             timeSeconds = 0;
+
+            powerSecs = 0;
         }
 
         public void OnTick(GameTime gameTime)
         {
+            // Reset Increment triggers
+            BonnieInc = false; ChicaInc = false; FoxyInc = false;
+
             if (startTime + 1 < gameTime.TotalGameTime.TotalSeconds)
             {
                 timeSeconds++;
                 startTime = gameTime.TotalGameTime.TotalSeconds;
+                power -= powerUsage;
+
             } 
 
             if (timeSeconds == 90 && time == 12)
@@ -61,6 +74,10 @@ namespace FNAF1_Recreation
             {
                 timeSeconds = 0;
                 time++;
+
+                BonnieInc = time == 2 || time == 3 || time == 4;
+                ChicaInc = time == 3 || time == 4;
+                FoxyInc = time == 3 || time == 4;
             }
 
             powerUsage = 1;
